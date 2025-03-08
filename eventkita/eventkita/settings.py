@@ -34,7 +34,7 @@ EMAIL_HOST_PASSWORD = 'your-app-password'  # Gunakan App Password, bukan passwor
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 
 ]
 
@@ -163,3 +164,6 @@ EMAIL_HOST_USER = 'miminakupadamu122@gmail.com'
 EMAIL_HOST_PASSWORD = 'hypparyyneotatjx'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
