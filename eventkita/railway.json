@@ -1,11 +1,11 @@
 {
-    "build": {
-      "commands": [
-        "pip install -r requirements.txt",
-        "npm install --prefix app/theme",
-        "npm run build --prefix app/theme",
-        "python manage.py collectstatic --noinput"
-      ]
-    }
-  }
-  
+  "build": {
+    "commands": [
+      "pip install -r requirements.txt",
+      "npm install --prefix app/theme",
+      "npm run build --prefix app/theme",
+      "python manage.py collectstatic --noinput"
+    ]
+  },
+  "start": "gunicorn eventkita.wsgi --bind 0.0.0.0:$PORT"
+}
