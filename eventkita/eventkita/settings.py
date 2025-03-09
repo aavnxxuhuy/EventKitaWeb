@@ -54,7 +54,7 @@ INSTALLED_APPS = [
 
 ]
 
-TAILWIND_APP_NAME = 'theme'
+TAILWIND_APP_NAME = 'app'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
