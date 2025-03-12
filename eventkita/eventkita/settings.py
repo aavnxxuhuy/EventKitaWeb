@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from environ import ENV
+env = ENV()
+ENV.read_env()
+ENVIRONMENT = env('ENVIRONMENT', default ='production')
+
+
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,18 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w@2zo)p*$8x#+yz_ab3i3_2mvf!62^!2h8y3%a*cb0i4mm!php'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'  # Ganti dengan email kamu
-EMAIL_HOST_PASSWORD = 'your-app-password'  # Gunakan App Password, bukan password Gmail biasa
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+if ENVIRONMENT == 'development':
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 

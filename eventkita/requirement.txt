@@ -1,5 +1,0 @@
-django
-pillow
-gunicorn
-whitenoise
-django-tailwind
