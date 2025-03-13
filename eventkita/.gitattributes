@@ -1,3 +1,2 @@
-* text=auto
-eventkita/start.sh text eol=lf
-Procfile text eol=lf
+# eventkita/start.sh text eol=lf
+# Procfile text eol=lf
