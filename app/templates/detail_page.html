@@ -1,0 +1,517 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EventKita | Detail Acara{% endblock %}
+{% block head %} 
+<style>
+  #toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Aligns to the right */
+  }
+
+  .toast-message {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 300px;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid #3498db;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+  </style>
+{% endblock %}
+
+
+
+{% block content %}
+
+<!-- Navigation Bar -->
+<section>
+    <nav class="bg-primaryBlue border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div class="max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto p-4">
+          <a href="{% url 'home' %}" class="flex items-center space-x-3 rtl:space-x-reverse">
+              <img src="{% static 'logo/Logo.png' %}" class="h-8" alt="EventKita Logo" />
+          </a>
+          <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">
+              <span class="sr-only">Open main menu</span>
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="{% static 'default_images/profile.png' %}" fill="none" viewBox="0 0 17 14">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+              </svg>
+          </button>
+          <div class="hidden w-full md:block md:w-auto" id="navbar-dropdown">
+            <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-transparent md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-transparent dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+              <li  class="md:pt-[10]">
+                <a href="{% url 'home' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Beranda</a>
+              </li>
+              <li  class="md:pt-[10]">
+                <a href="{% url 'calendar' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Kalender</a>
+              </li>
+              <li class="md:pt-[10]">
+                <a href="{% url 'about_us' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Tentang Kita</a>
+              </li>
+              
+              {% if user.id == None %}
+                {% else %}
+                <li class="md:pt-[10]">
+                    <button id="dropdownNavbarLink" data-dropdown-toggle="dropdownNavbar" class="flex items-center justify-between w-full py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:border-0 md:hover:text-white md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent">Selengkapnya <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                    </svg></button>
+                    <!-- Dropdown menu -->
+                    <div id="dropdownNavbar" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600">
+                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-400" aria-labelledby="dropdownLargeButton">
+                        <li>
+                            <a href="{% url 'notifikasi' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Notifikasi</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'saved' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Tersimpan</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'riwayattransaksi' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Riwayat Transaksi</a>
+                          </li>
+                        </ul>
+                        <!-- <div class="py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Sign out</a>
+                        </div> -->
+                    </div>
+                </li>
+                {% endif %}
+                
+              <li>
+                {% if user.id == None %}
+                    <div class="card" style="cursor: pointer;" data-href="{% url 'login' %}">
+                        <button type="button" class="text-white px-10 bg-transparent border-4 border-white hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
+                    </div>
+                    
+                    {% else %}
+                    <div class="card" style="cursor: pointer;" data-href="{% url 'profile' %}">
+                        <button class="flex items-center justify-between p-2 duration-200 focus:outline-none">
+                            <div class="flex flex-col text-end me-5">
+                                <span class="text-xs font-semibold text-gray-100">{{ user.username }}</span>
+                                <span class="text-xs text-gray-400">Set up profile...</span>
+                            </div>
+                            {% if user.profile_picture %}
+                            <div class="w-7 h-7">
+                                <img src="{{ user.profile_picture.url }}" alt="User Profile" class="w-full h-full rounded-full object-cover">
+                            </div>
+                            {% else %}
+                            <div class="w-7 h-7">
+                                <img src="{% static 'default_images/profile.png' %}" alt="User Profile" class="w-full h-full rounded-full object-cover">
+                            </div>
+                            {% endif %}
+        
+                        </button>
+                    </div>
+                    {% endif %}
+              </li>
+        
+            </ul>
+          </div>
+        </div>
+        </nav>
+
+        
+    <!-- Toast Top right -->
+    {% if messages %}
+    <div id="toast-container">
+        {% for message in messages %}
+        <div class="toast-message text-white rounded-lg shadow-md flex items-center justify-between p-4 mb-2
+            {% if message.tags == 'success' %} bg-green-500 {% elif message.tags == 'warning' %} bg-yellow-500 
+            {% elif message.tags == 'error' %} bg-red-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %}">
+            <span class="text-sm font-normal">{{ message }}</span>
+            <button type="button" class="ms-8 text-white hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" aria-label="Close" onclick="this.closest('.toast-message').remove()">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+<section class="mt-5 md:mt-10 mx-auto max-w-screen-xl p-5">
+    <!-- breadcrumbs -->
+    <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li class="inline-flex items-center">
+                <a href="javascript:history.back()" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+                    <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                    </svg>
+                    Kembali
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                    </svg>
+                    <span class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">{{ event.judul }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Event Image -->
+    <img class="mx-auto max-w-screen-xl mt-8 w-full h-96 object-cover rounded-xl" src="{{ event.foto_event.url }}" alt="{{ event.judul }}">
+
+    <section class="mt-2 md:mt-5 lg:mt-5 mx-auto max-w-screen-xl p-5">
+        <div class="grid grid-cols-4 gap-2">
+            <div class="col-span-3">
+                <h1 class="mb-4 text-1xl font-extrabold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-3xl dark:text-white">{{ event.judul }}</h1>
+                <div class="flex items-center rounded-lg">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <a href="https://www.google.com/maps?q={{ event.lokasi|urlencode }}" 
+                    target="_blank" 
+                    class="ms-5 text-gray-700 hover:text-blue-500 transition">
+                        {{ event.lokasi }}
+                    </a>
+                </div>
+                <div class="mt-2 flex items-center rounded-lg">
+                    <i class="fa-regular fa-calendar"></i>
+                    <p class="ms-5 text-gray-700">{{ event.tanggal_kegiatan|date:"d M Y" }}</p>
+                </div>
+
+            </div>
+
+            <div class="col-span-1 flex flex-col items-end">
+                <div class="border-4 border-secondaryOrange p-2 rounded-lg bg-white shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center px-3">
+                            <span id="days" class="text-3xl font-bold text-secondaryOrange">0</span>
+                            <p class="text-sm text-secondaryOrange">Hari</p>
+                        </div>
+                        <div class="text-center px-3">
+                            <span id="hours" class="text-3xl font-bold text-secondaryOrange">0</span>
+                            <p class="text-sm text-secondaryOrange">Jam</p>
+                        </div>
+                        <div class="text-center px-3">
+                            <span id="minutes" class="text-3xl font-bold text-secondaryOrange">0</span>
+                            <p class="text-sm text-secondaryOrange">Menit</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    {% if user.is_authenticated %}
+                        <i id="bookmarkIcon" class="{% if isSaved %}fa-solid{% else %}fa-regular{% endif %} fa-bookmark icon cursor-pointer text-secondaryOrange hover:text-secondaryOrange text-3xl" onclick="toggleBookmark()"></i>
+                    {% else %}
+                        <span class="text-gray-500"> </span>
+                    {% endif %}
+                </div>
+            </div>
+
+                
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <hr class="border-t-2 border-gray-400 rounded-full">
+        </div>
+    </section>
+
+    <!-- Event Details -->
+    <section class="mt-1 md:mt-2 lg:mt-2 mx-auto max-w-screen-xl p-5">
+        <h1 class="mb-4 text-1xl font-extrabold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-3xl dark:text-white">Detail Event:</h1>
+        <div class="p-4">
+            <p>{{ event.deskripsi }}</p>
+        </div>
+
+        <div class="mt-10">
+            <hr class="border-t-2 border-gray-400 rounded-full">
+        </div>
+    </section>
+    
+    {% if event.is_free == True  %}
+    <!-- ini yg pesan stan-->
+    <section class="mt-1 md:mt-2 lg:mt-2 mx-auto max-w-screen-xl p-5">
+        <h1 class="mb-4 text-1xl font-extrabold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-3xl dark:text-white">Informasi Tambahan:</h1>
+        <div class="p-4 shadow-md rounded-md">
+            <p>
+                {{ event.additional_info }}
+            </p>
+            <!-- <a class="text-secondaryOrange" href="">{{ event.additional_info }}</a> -->
+        </div>
+    </section>
+    {% else %}
+    <!-- Ticket Section -->
+    <section id="ticketSection" class="mt-1 md:mt-2 lg:mt-2 mx-auto max-w-screen-xl p-5 mb-20">
+        <h1 class="mb-4 text-1xl font-extrabold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-3xl dark:text-white">TIKET</h1>
+
+        {% for ticket in tickets %}
+        <div class="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden mb-3">
+            <div class="px-4 pt-2">
+                <h2 class="text-xl font-bold text-gray-800">{{ ticket.ticket.judul }} - {{ ticket.ticket.date|date:"d M Y (h:i A)" }}</h2>
+                <p class="text-gray-600">{{ ticket.ticket.deskripsi }}</p>
+            </div>
+            <div class="flex items-center justify-start px-4 pb-3 pt-[1rem]">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-orange-500 rounded-full flex items-center justify-center text-white"></div>
+                    <span class="ml-2 text-gray-700 text-xs">Tidak bisa refund</span>
+                </div>
+                <div class="ms-3 flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full flex items-center justify-center text-white"></div>
+                    <span class="ml-2 text-gray-700 text-xs">Harga tiket sudah termasuk pajak pemerintah dan biaya admin tiket 20%</span>
+                </div>
+            </div>
+            <div class="border-t-4 border-dotted border-gray-300 mx-4"></div>
+            <div class="flex justify-between items-center px-4 pt-[1rem]">
+                <span class="text-lg font-bold text-secondaryOrange">IDR {{ ticket.formatted_price  }}</span>
+                <button onclick="checkLogin(event, `{% url 'payment_1' ticket.ticket.id %}`);"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                Pesan
+            </button>
+            </div>
+            <div class="ps-4 pb-4">
+                <span class="text-xs text-secondaryOrange">Tersisa {{ ticket.ticket.stock }} tiket</span>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </section>
+
+    {% endif %}
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center transition-opacity duration-300">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm text-center relative transform scale-95 transition-transform duration-300">
+        <!-- Close Button (Top Right) -->
+        <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+            ✖
+        </button>
+
+        <!-- Title -->
+        <h2 class="text-lg font-bold text-gray-800 mb-2">Login Diperlukan</h2>
+        
+        <!-- Message -->
+        <p class="text-gray-600 mb-4">Anda harus login terlebih dahulu untuk memesan tiket.</p>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-3">
+            <a href="{% url 'login' %}" class="bg-primaryBlue w-full text-white px-5 py-2 rounded-lg shadow-md hover:bg-blue-700 transition">
+                Login
+            </a>
+            <!-- <button onclick="closeModal()" class="bg-gray-300 text-gray-700 px-5 py-2 rounded-lg shadow-md hover:bg-gray-400 transition">
+                Tutup
+            </button> -->
+        </div>
+    </div>
+</div>
+
+
+</section>
+
+<!-- Loading Indicator Modal -->
+<div id="loadingModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-5 rounded-lg shadow-lg text-center">
+        <p class="text-lg font-semibold">Loading...</p>
+        <div class="mt-2">
+            <div class="loader"></div>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<script>
+    // Correctly passing authentication status from Django to JavaScript
+    let userIsAuthenticated = "{{ request.user.is_authenticated }}".toLowerCase() === "true";
+
+    function checkLogin(event, paymentUrl) {
+        event.preventDefault(); // Prevent default link behavior
+
+        if (userIsAuthenticated) {
+            // User is logged in, navigate to the payment page
+            window.location.href = paymentUrl;
+        } else {
+            // User is NOT logged in, show the modal
+            document.getElementById("loginModal").classList.remove("hidden");
+            document.getElementById("loginModal").classList.add("flex");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById("loginModal").classList.add("hidden");
+        document.getElementById("loginModal").classList.remove("flex");
+    }
+</script>
+
+
+
+{% endblock %}
+
+
+
+{% block javascript %}
+<script>
+    let isSaving = false;
+
+    function toggleBookmark() {
+        if (isSaving) return; // Prevent multiple clicks
+        isSaving = true;
+
+        let icon = document.getElementById("bookmarkIcon");
+        const eventId = "{{ event.id }}"; // Get the event ID from the template
+
+        console.log('Toggling bookmark for event ID:', eventId); // Debugging log
+
+        if (icon.classList.contains("fa-regular")) {
+            // Save event
+            fetch(`../save/${eventId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Include CSRF token
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 400) {
+                        console.log('Event already saved');
+                        return;
+                    }
+                    throw new Error('Error saving event');
+                }
+                // Change icon to solid after successful save
+                icon.classList.remove("fa-regular");
+                icon.classList.add("fa-solid");
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                isSaving = false; // Re-enable the button
+            });
+        } else {
+            // Remove event
+            fetch(`../unsave/${eventId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Include CSRF token
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error removing event');
+                }
+                // Change icon back to regular after successful unsave
+                icon.classList.remove("fa-solid");
+                icon.classList.add("fa-regular");
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                isSaving = false; // Re-enable the button
+            });
+        }
+    }
+
+    // Event listeners for other clickable elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.payment');
+        cards.forEach(function(card) { 
+            card.addEventListener('click', function() {
+                const href = card.getAttribute('data-href');
+                window.location.href = href; 
+            });
+        });
+
+        const cardElements = document.querySelectorAll('.card');
+        cardElements.forEach(function(card) { 
+            card.addEventListener('click', function() {
+                const href = card.getAttribute('data-href');
+                window.location.href = href; 
+            });
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.payment');
+        cards.forEach(function(card) { 
+            card.addEventListener('click', function() {
+                const href = card.getAttribute('data-href');
+                window.location.href = href; 
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(function(card) { 
+            card.addEventListener('click', function() {
+                const href = card.getAttribute('data-href');
+                window.location.href = href; 
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('#toast-container .flex');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 1000); // Removes after transition
+            }, 5000); // Show for 5 seconds
+        });
+    });
+
+    function updateCountdown() {
+        const eventDateString = "{{ event.tanggal_kegiatan|date:'Y-m-d H:i:s' }}"; // Ensure the full date and time is used
+        const eventDate = new Date(eventDateString).getTime(); // Parse the date correctly
+        const now = new Date().getTime();
+        const timeDiff = eventDate - now;
+
+        if (timeDiff > 0) {
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById("days").textContent = days;
+            document.getElementById("hours").textContent = hours;
+            document.getElementById("minutes").textContent = minutes;
+        } else {
+            document.getElementById("days").textContent = "0";
+            document.getElementById("hours").textContent = "0";
+            document.getElementById("minutes").textContent = "0";
+            clearInterval(countdownInterval);
+        }
+    }
+
+    // Update every second
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown(); // Run immediately to prevent initial delay
+    
+</script>
+{% endblock %}

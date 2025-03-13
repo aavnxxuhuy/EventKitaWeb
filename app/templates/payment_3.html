@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EventKita | Detail Acara{% endblock %}
+
+{% block head %} 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  #paymentModal {
+      background-color: rgba(0, 0, 0, 0.7);
+  }
+  #paymentModal > div {
+      width: 400px; 
+  }
+  #toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Aligns to the right */
+  }
+
+  .toast-message {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 300px;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Bar -->
+<nav class="bg-primaryBlue border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+    <div class="max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <a href="{% url 'home' %}" class="flex items-center space-x-3 rtl:space-x-reverse">
+          <img src="{% static 'logo/Logo.png' %}" class="h-8" alt="EventKita Logo" />
+      </a>
+      <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="w-5 h-5" aria-hidden="true" xmlns="{% static 'default_images/profile.png' %}" fill="none" viewBox="0 0 17 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+          </svg>
+      </button>
+      <div class="hidden w-full md:block md:w-auto" id="navbar-dropdown">
+        <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-transparent md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-transparent dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li  class="md:pt-[10]">
+            <a href="{% url 'home' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Beranda</a>
+          </li>
+          <li  class="md:pt-[10]">
+            <a href="{% url 'calendar' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Kalender</a>
+          </li>
+          <li class="md:pt-[10]">
+            <a href="{% url 'about_us' %}" class="block py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-white md:dark:hover:text-white dark:hover:bg-primaryBlue dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Tentang Kita</a>
+          </li>
+          
+          {% if user.id == None %}
+          {% else %}
+          <li class="md:pt-[10]">
+              <button id="dropdownNavbarLink" data-dropdown-toggle="dropdownNavbar" class="flex items-center justify-between w-full py-2 px-3 text-gray-500 rounded-sm hover:text-white hover:bg-primaryBlue md:hover:bg-transparent md:border-0 md:hover:text-white md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent">Selengkapnya <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+              </svg></button>
+              <!-- Dropdown menu -->
+              <div id="dropdownNavbar" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600">
+                  <ul class="py-2 text-sm text-gray-700 dark:text-gray-400" aria-labelledby="dropdownLargeButton">
+                  <li>
+                      <a href="{% url 'notifikasi' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Notifikasi</a>
+                  </li>
+                  <li>
+                      <a href="{% url 'saved' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Tersimpan</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'riwayattransaksi' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Riwayat Transaksi</a>
+                  </li>
+                  </ul>
+                  <!-- <div class="py-1">
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Sign out</a>
+                  </div> -->
+              </div>
+          </li>
+          {% endif %}
+          <li>
+            {% if user.id == None %}
+            <div class="card" style="cursor: pointer;" data-href="{% url 'login' %}">
+                <button type="button" class="text-white px-10 bg-transparent border-4 border-white hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
+            </div>
+            
+            {% else %}
+            <div class="card" style="cursor: pointer;" data-href="{% url 'profile' %}">
+              <button class="flex items-center justify-between p-2 duration-200 focus:outline-none">
+                  <div class="flex flex-col text-end me-5">
+                      <span class="text-xs font-semibold text-gray-100">{{ user.username }}</span>
+                      <span class="text-xs text-gray-400">Set up profile...</span>
+                  </div>
+                  {% if user.profile_picture %}
+                  <div class="w-7 h-7">
+                      <img src="{{ user.profile_picture.url }}" alt="User Profile" class="w-full h-full rounded-full object-cover">
+                  </div>
+                  {% else %}
+                  <div class="w-7 h-7">
+                      <img src="{% static 'default_images/profile.png' %}" alt="User Profile" class="w-full h-full rounded-full object-cover">
+                  </div>
+                  {% endif %}
+
+              </button>
+          </div>
+            {% endif %}
+          </li>
+    
+        </ul>
+      </div>
+    </div>
+    </nav>
+
+ <!-- Toast Top right -->
+ {% if messages %}
+ <div id="toast-container">
+     {% for message in messages %}
+     <div class="toast-message text-white rounded-lg shadow-md flex items-center justify-between p-4 mb-2
+         {% if message.tags == 'success' %} bg-green-500 {% elif message.tags == 'warning' %} bg-yellow-500 
+         {% elif message.tags == 'error' %} bg-red-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %}">
+         <span class="text-sm font-normal">{{ message }}</span>
+         <button type="button" class="ms-8 text-white hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" aria-label="Close" onclick="this.closest('.toast-message').remove()">
+             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+             </svg>
+         </button>
+     </div>
+     {% endfor %}
+ </div>
+ {% endif %}
+
+    <section class="bg-primaryBlue py-10">
+      <div class="mx-auto max-w-screen-xl grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-5 justify-center px-10">           
+        <figure class="md:col-span-1 max-w-lg"> 
+          <img class="h-60 w-lg rounded-lg" src="{{ event.foto_event.url }}" alt="image description">
+        </figure>
+        <div class="col-span-1 md:col-span-2 flex flex-col justify-center">
+          <h1 class="text-lg font-extrabold leading-none tracking-tight text-white md:text-1xl lg:text-2xl dark:text-white">{{ event.judul }}</h1>
+          <div class="mt-2 flex items-center rounded-lg">
+            <i class="fa-regular fa-calendar text-white"></i>
+            <p class="ms-5 text-white">
+              {{ event.tanggal_kegiatan|date:"d M Y" }}
+            </p>
+          </div>
+    
+          <div class="flex items-center rounded-lg">
+            <i class="fa-solid fa-location-dot text-white"></i>
+            <p class="ms-5 text-white">
+              Jl. BSD Grand Boulevard No.1, Pagedangan, Kec. Pagedangan, Kabupaten Tangerang, Banten 15339, Tangerang, Banten, Indonesia
+            </p>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+
+    <!-- Ticket Content -->
+    <section id="ticket-info" class="mx-auto max-w-screen-xl px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+      <div class="col-span-2">
+        <h1 class="text-3xl font-bold">Informasi Tiket</h1>
+
+        <!-- Ticket Details -->
+        <div class="bg-primaryBlue pt-10 px-10 justify-items-start rounded-t-lg mt-6">
+          <div class="flex items-center mb-4">
+            <img src="{{ event.foto_event.url }}" alt="Event Image" class="rounded-lg w-56 mr-3 h-36 object-cover" />
+            <h2 class="text-white text-2xl font-bold">The Script Satellites World Tour - Jakarta</h2>
+          </div>
+          <div class="grid grid-cols-4 items-center w-full">
+            <div class="col-span-3">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Lokasi</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ event.lokasi }}
+              </p>
+            </div>
+            <div class="col-span-1">
+              <div class="bg-white p-6 rounded-lg shadow-md" id="qrcode"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 w-full">
+            <div class="col-span-1">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Tanggal</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ event.tanggal_kegiatan|date:"d M Y" }}
+              </p>
+            </div>
+            <div class="col-span-1 text-start ps-10">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Jumlah Tiket</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ purchase.jumlah_tiket }}
+              </p>
+            </div>
+            <!-- <div class="col-span-1 text-start ps-10">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Time</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ event.tanggal_kegiatan|date:"h:i A" }}
+              </p>
+            </div> -->
+            <div class="col-span-1 ps-10">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Waktu</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ tiket.date|date:"d M Y (h:i A)" }}
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 w-full">
+            <div class="col-span-1">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Section</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ tiket.judul }}
+              </p>
+            </div>
+            <div class="col-span-2 ps-10">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Deskripsi</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ tiket.deskripsi }}
+              </p>
+            </div>
+            <!-- <div class="col-span-1 text-start ps-10">
+              <h2 class="mt-10 text-xl font-semibold text-gray-300">Deskripsi</h2>
+              <p class="text-lg text-white font-semibold">
+                {{ tiket.deskripsi }}
+              </p>
+            </div> -->
+          </div>
+        </div>
+
+        <div class="bg-primaryBlue rounded-b-lg pb-4">
+          <div class="bg-red w-full flex items-center">
+            <div class="flex-shrink-0">
+                <img src="{% static 'default_images/payment/half_circle_left.png' %}" class="h-20" alt="">
+            </div> 
+            <div class="bg-gray-500 flex-grow h-1"></div>
+            <div class="flex-shrink-0">
+                <img src="{% static 'default_images/payment/half_circle_right.png' %}" class="h-20" alt="">
+            </div>
+          </div>
+
+          <div class="flex justify-center px-8">
+            <svg id="barcode"></svg>
+          </div>
+        </div>
+      
+
+
+      </div>
+
+
+      <div class="col-span-1 justify-items-center">
+          <div class="border-2 border-primaryBlue rounded-lg p-6 bg-white shadow-md w-full">
+            <!-- Image -->
+            <div class="flex justify-center mb-4">
+                <img src="{% static 'default_images/payment/Payment_success.png' %}" alt="Payment Successful" class="rounded h-20">
+            </div>
+            
+            <!-- Payment Successful Text -->
+            <h2 class="text-center text-lg font-bold mb-2">Transaksi Berhasil</h2>
+            
+            <!-- Order Number Box -->
+            <div class="bg-primaryBlue text-white rounded-lg p-2 text-center mb-4">
+                <p>Pesanan #{{ purchase.id }}</p>
+            </div>
+            
+            <!-- Transaction Detail Text -->
+            <p class="text-start font-semibold mb-2 text-sm">Detail Transaksi</p>
+            
+            <!-- Transaction Details Box -->
+            <div class="border-2 border-primaryBlue rounded-lg">
+                <div class="border-b-2 border-blue-800 pb-2 mb-2 p-2">
+                    <div class="grid grid-cols-2">
+                        <div class="text-start text-sm font-bold text-lightBlueApp">
+                            <p>Tanggal Transaksi</p>
+                        </div>
+                        <div class="text-end text-sm font-bold text-primaryBlue">
+                          <p>{{ purchase.created_at|date:"d M Y (h:i A)" }}</p>                        
+                        </div>
+                    </div>
+                </div>
+                <div class="border-b-2 border-blue-800 pb-2 mb-2 p-2">
+                  <div class="grid grid-cols-2">
+                      <div class="text-start text-sm font-bold text-lightBlueApp">
+                          <p>Metode Pembayaran</p>
+                      </div>
+                      <div class="text-end text-sm font-bold text-primaryBlue">
+                          <p>BCA Virtual Account</p>
+                      </div>
+                  </div>
+              </div>
+                <div class="grid grid-cols-2 p-2">
+                    <div class="text-start text-sm font-bold text-lightBlueApp">
+                        <p>Total</p>
+                    </div>
+                    <div class="text-end text-sm font-bold text-primaryBlue">
+                      <p>IDR {{ total_price }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img class="h-auto max-w-full mt-8" src="{% static 'default_images/payment/payment3.png' %}" alt="image description">
+
+      </div>
+
+    </section>
+
+    <div class="mx-auto max-w-screen-xl flex items-center space-x-4 px-6 mb-10 w-full ">
+      <!-- First Button: No Background -->
+      <a href="{% url 'home' %}" class="border border-primaryBlue rounded-lg px-5 py-4 text-primaryBlue hover:bg-primaryBlue hover:text-white transition duration-200 sm:w-full md:w-auto text-center">
+          Kembali ke Beranda
+      </a>
+      
+      <!-- Second Button: Dark Blue Background -->
+      <button id="download-ticket" class="bg-primaryBlue text-white rounded-lg px-5 py-4 hover:bg-blue-950 transition duration-200 sm:w-full md:w-auto">
+        Download Tiket
+      </button>
+    </div>
+
+    {% include 'footer.html' %}
+    {% endblock %}
+    
+    
+    
+    {% block javascript %}
+    <script>
+      // URL to encode
+      var purchaseId = "{{ purchase.id }}";  // Get the purchase ID from the context
+      var url = "http://127.0.0.1:8000/detailpage/payment1/payment2/payment3/" + purchaseId;
+
+
+      // Generate QR Code
+      new QRCode(document.getElementById("qrcode"), {
+          text: url,
+          width: 150,
+          height: 150
+      });
+
+      // Generate Barcode
+      JsBarcode("#barcode", url, {
+          format: "CODE128",
+          lineColor: "#000",
+          width: 2,
+          height: 50,
+          displayValue: true
+      });
+
+      // Function to download the ticket as a PDF
+      document.getElementById("download-ticket").addEventListener("click", function () {
+        const ticketContent = document.getElementById("ticket-info");
+        const originalClasses = ticketContent.className; 
+        ticketContent.className = "mx-auto max-w-screen-xl px-6 py-10 grid grid-cols-3 gap-8"; 
+
+        const options = {
+          margin: 0, 
+          filename: "tiket.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            logging: true,
+            useCORS: true,
+            scrollY: 0, 
+            scrollX: 0, 
+          },
+          jsPDF: { unit: "mm", format: "b4", orientation: "landscape" },
+        };
+
+        html2pdf()
+          .from(ticketContent)
+          .set(options)
+          .save()
+          .then(() => {
+            ticketContent.className = originalClasses;
+          });
+      });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(function(card) { 
+            card.addEventListener('click', function() {
+                const href = card.getAttribute('data-href');
+                window.location.href = href; 
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('#toast-container .flex');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 1000); // Removes after transition
+            }, 5000); // Show for 5 seconds
+        });
+    });
+  </script>
+
+    {% endblock %}
