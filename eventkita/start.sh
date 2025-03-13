@@ -1,5 +1,3 @@
 #!/bin/bash
-set -e
-set -x
-python manage.py migrate
-exec gunicorn eventkita.wsgi --log-file -
+echo "Starting Django Application..."
+gunicorn eventkita.wsgi --bind 0.0.0.0:$PORT
