@@ -11,8 +11,8 @@ COPY . .
 RUN python3 -m venv /app/venv
 
 # Aktifkan virtual environment dan install dependencies
-RUN /app/venv/bin/python -m pip install --upgrade pip
-RUN /app/venv/bin/pip install -r requirements.txt
+RUN venv/bin/python -m pip install --upgrade pip
+RUN venv/bin/pip install -r requirements.txt
 
 # Expose port untuk Gunicorn
 EXPOSE 8000
