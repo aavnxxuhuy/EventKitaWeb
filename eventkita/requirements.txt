@@ -1,0 +1,9 @@
+Django==5.1.5
+django_multiselectfield==0.1.13
+djangorestframework
+django-cors-headers
+djangorestframework_simplejwt
+djoser
+gunicorn
+whitenoise
+mysql-connector-python

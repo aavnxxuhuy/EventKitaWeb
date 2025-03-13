@@ -11,12 +11,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from environ import ENV
-env = ENV()
-ENV.read_env()
-ENVIRONMENT = env('ENVIRONMENT', default ='production')
-
-
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,13 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = 'django-insecure-w@2zo)p*$8x#+yz_ab3i3_2mvf!62^!2h8y3%a*cb0i4mm!php'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development':
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -55,7 +46,7 @@ INSTALLED_APPS = [
 
 ]
 
-TAILWIND_APP_NAME = 'app'
+TAILWIND_APP_NAME = 'theme'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -71,8 +62,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'eventkita.urls'
@@ -141,6 +131,9 @@ USE_I18N = True
 
 STATIC_URL = 'static/'
 
+STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -153,7 +146,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -166,6 +158,3 @@ EMAIL_HOST_USER = 'miminakupadamu122@gmail.com'
 EMAIL_HOST_PASSWORD = 'hypparyyneotatjx'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

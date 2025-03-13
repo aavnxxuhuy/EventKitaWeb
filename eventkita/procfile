@@ -1,1 +1,3 @@
-web: python manage.py tailwind build && python manage.py collectstatic --noinput && gunicorn eventkita.wsgi:application --bind 0.0.0.0:$PORT
+web: gunicorn eventkita.wsgi --log-file - 
+#or works good with external database
+web: python manage.py migrate && gunicorn eventkita.wsgi

@@ -17,7 +17,11 @@ from .models import NewsletterSubscriber
 from datetime import datetime
 import locale
 from .models import Event
+import locale
+from django.shortcuts import get_object_or_404, render
+from .models import Event, SavedEvents
 
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 searchStatus = 'not_empty'
@@ -115,6 +119,21 @@ def finishsignup_view(request):
 def home(request):
     today = timezone.now()
 
+    # Get the 5 most upcoming events
+    banner_events = Event.objects.filter(tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')[:5]
+        
+    # Convert banner_events to JSON
+    recent_events_json = json.dumps([
+        {
+            "id": str(event.id),  # Convert UUID to string
+            "date": event.tanggal_kegiatan.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
+            "image": event.foto_event.url if event.foto_event else "",  # Handle empty image field
+            "title": event.judul,  # Event title
+            "description": event.deskripsi if event.deskripsi else "No description available."  # Handle empty description
+        }
+        for event in banner_events
+    ])
+
     # Get upcoming events
     upcoming_events = Event.objects.filter(tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')
 
@@ -126,16 +145,17 @@ def home(request):
         'workshop': upcoming_events.filter(kategori='workshop')[:4],
     }
 
+    
+    big_events = Event.objects.filter(big_event=True, tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')
+
+
     context = {
-        'semua_event': semua_event
+        'semua_event': semua_event,
+        'recent_events_json': recent_events_json,
+        'big_events': big_events,  # Add big events to context
     }
     return render(request, 'index.html', context)
 
-import locale
-from django.shortcuts import get_object_or_404, render
-from .models import Event, SavedEvents
-
-from django.contrib.auth.decorators import login_required
 
 def detail_page(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -384,22 +404,32 @@ def payment_2(request, purchase_id):
     }
     
     if request.method == "POST" and 'bukti_pembayaran' in request.FILES:
-        purchase.bukti_pembayaran = request.FILES['bukti_pembayaran']
-        purchase.status_pembelian = 'berhasil'
-        purchase.save()
+         # Check if there is enough stock
+        if tiket.stock >= purchase.jumlah_tiket:
+            # Update the purchase details
+            purchase.bukti_pembayaran = request.FILES['bukti_pembayaran']
+            purchase.status_pembelian = 'berhasil'
+            purchase.save()
 
-        notification_message = f"Pembayaran untuk {event.judul} - {tiket.judul} berhasil. Terima kasih telah melakukan pembayaran."
-        Notification.objects.create(
-            user=request.user,
-            event=event,
-            purchase=purchase,
-            message=notification_message,
-            link=f"http://127.0.0.1:8000/detailpage/payment1/payment2/payment3/{purchase.id}"
-        )
+            # Reduce the stock of the ticket
+            tiket.stock -= purchase.jumlah_tiket
+            tiket.save()  # Save the updated ticket stock
 
-        messages.success(request, 'Pembayaran Berhasil!')
+            # Create a notification for the user
+            notification_message = f"Pembayaran untuk {event.judul} - {tiket.judul} berhasil. Terima kasih telah melakukan pembayaran."
+            Notification.objects.create(
+                user=request.user,
+                event=event,
+                purchase=purchase,
+                message=notification_message,
+                link=f"http://127.0.0.1:8000/detailpage/payment1/payment2/payment3/{purchase.id}"
+            )
 
-        return redirect('payment_3', purchase_id=purchase.id)
+            messages.success(request, 'Pembayaran Berhasil!')
+            return redirect('payment_3', purchase_id=purchase.id)
+        else:
+            messages.error(request, 'Stok tiket tidak cukup untuk pemesanan ini.')
+            return redirect('payment_2', purchase_id=purchase.id)
 
     # context = {'purchase': purchase}
     return render(request, 'payment_2.html', context)
@@ -544,24 +574,24 @@ def get_unread_notifications(request):
         return {'unread_notifications': Notification.objects.filter(user=request.user, is_read=False).count()}
     return {}
 
+from django.http import JsonResponse
+
 def subscribe_newsletter(request):
     if request.method == "POST":
         email = request.POST.get('email')
 
         if not email:
-            messages.error(request, "Email tidak boleh kosong!")
-            return redirect('home')
+            return JsonResponse({'status': 'error', 'message': 'Email tidak boleh kosong!'})
 
-        # Cek apakah email sudah terdaftar
+        # Check if the email is already registered
         if NewsletterSubscriber.objects.filter(email=email).exists():
-            messages.warning(request, "Email sudah terdaftar!")
-            return redirect('home')
+            return JsonResponse({'status': 'exists', 'message': 'Sudah terdaftarkan sebelumnya.'})
 
-        # Simpan email ke database
+        # Save the email to the database
         subscriber = NewsletterSubscriber(email=email)
         subscriber.save()
 
-        # Kirim email ke pengguna
+        # Send email to the user
         subject = "Terima Kasih Telah Berlangganan EventKita 🎉"
         message_body = f"""
         Halo,
@@ -583,13 +613,11 @@ def subscribe_newsletter(request):
                 [email],  # Recipient
                 fail_silently=False,
             )
-            messages.success(request, "Anda berhasil berlangganan! Silakan cek email Anda.")
+            return JsonResponse({'status': 'success', 'message': 'Subscription successful! Thank you for joining.'})
         except Exception as e:
-            messages.error(request, f"Terjadi kesalahan: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': f'Terjadi kesalahan: {str(e)}'})
 
-        return redirect('home')
-
-    return render(request, 'footer.html')
+    return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
 
 # def send_test_email():
 #     subject = "Test Email from Django"
@@ -675,21 +703,46 @@ def selengkapnya(request, category):
     today = timezone.now()
     upcoming_events = Event.objects.filter(tanggal_kegiatan__gte=today, kategori=category).order_by('tanggal_kegiatan')
 
-    # Get upcoming events
-    if category == 'konser' :
+    # Set a default value for new_category
+    new_category = 'Unknown Event'  # Default value
+
+    # Assign new_category based on the category
+    if category == 'konser':
         new_category = 'Konser'
-    elif category == 'konferensi' :
+    elif category == 'konferensi':
         new_category = 'Konferensi'
-    elif category == 'bazaar' :
+    elif category == 'bazaar':
         new_category = 'Bazaar'
-    elif category == 'workshop' :
+    elif category == 'workshop':
         new_category = 'Workshop'
 
     context = {
         'semua_event': upcoming_events,
-        'category' : new_category
+        'category': new_category,
     }
     return render(request, 'selengkapnya.html', context)
+
+
+def selengkapnya_bigevent(request):
+    print("selengkapnya_bigevent function called")  # Debugging line
+    today = timezone.now()
+    print("Current date and time:", today)  # Debugging line
+
+    # Fetch big events
+    big_events = Event.objects.filter(big_event=True, tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')
+    print("Big events fetched:", big_events)  # Debugging line
+
+    # Set the category
+    new_category = 'Event Besar'
+    print("New category set to:", new_category)  # Debugging line
+
+    # Prepare context
+    context = {
+        'semua_event': big_events,
+        'category': new_category
+    }
+    return render(request, 'selengkapnya.html', context)
+
 
 @login_required
 def riwayattransaksi(request):
@@ -725,6 +778,22 @@ def search_events(request):
     today = timezone.now().date()
     events = events.filter(tanggal_kegiatan__gte=today)
 
+     # Get the 5 most upcoming events
+    banner_events = Event.objects.filter(tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')[:5]
+        
+    # Convert banner_events to JSON
+    recent_events_json = json.dumps([
+        {
+            "id": str(event.id),  # Convert UUID to string
+            "date": event.tanggal_kegiatan.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
+            "image": event.foto_event.url if event.foto_event else "",  # Handle empty image field
+            "title": event.judul,  # Event title
+            "description": event.deskripsi if event.deskripsi else "No description available."  # Handle empty description
+        }
+        for event in banner_events
+    ])
+
+
     if category:
         events = events.filter(kategori__icontains=category)
     if location:
@@ -749,6 +818,8 @@ def search_events(request):
         'workshop': upcoming_events.filter(kategori='workshop')[:4],
     }
 
+    big_events = Event.objects.filter(big_event=True, tanggal_kegiatan__gte=today).order_by('tanggal_kegiatan')
+
     return render(request, 'index.html', {
         'events': events,
         'category_choices': Event.CATEGORY_CHOICES,
@@ -757,6 +828,8 @@ def search_events(request):
         'selected_category': category,
         'selected_location': location,
         'selected_date': date,
+        'big_events': big_events,
+        'recent_events_json': recent_events_json,
     })
 
 def faq(request):
