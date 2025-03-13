@@ -9,7 +9,7 @@ COPY . .
 
 # Buat virtual environment dan install dependencies
 RUN python -m venv venv && \
-    . venv/bin/activate && \
+    . venv/Scripts/activate && \
     pip install --upgrade pip && \
     pip install -r requirements.txt
 

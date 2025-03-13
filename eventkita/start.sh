@@ -1,6 +1,6 @@
 #!/bin/bash
 # Aktivasi Virtual Environment
-source venv/bin/activate
+source venv/Scripts/activate
 
 # Install dependencies (pastikan tidak ada yang tertinggal)
 pip install -r requirements.txt
