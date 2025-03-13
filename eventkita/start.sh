@@ -6,13 +6,13 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 
 # Migrate database
-python3 manage.py migrate
+python manage.py migrate
 
 # Collect static files
-python3 manage.py collectstatic --noinput
+python manage.py collectstatic --noinput
 
 # Jalankan Tailwind agar CSS bisa ter-generate
-python3 manage.py tailwind build
+python manage.py tailwind build
 
 # Jalankan Gunicorn
 gunicorn myproject.wsgi --bind 0.0.0.0:${PORT:-8000}
