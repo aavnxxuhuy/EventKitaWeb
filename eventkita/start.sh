@@ -1,3 +1,5 @@
 #!/bin/bash
+set -e
+set -x
 python manage.py migrate
-gunicorn eventkita.wsgi --log-file -
+exec gunicorn eventkita.wsgi --log-file -

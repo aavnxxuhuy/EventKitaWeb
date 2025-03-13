@@ -1,1 +1,1 @@
-web: ./start.sh
+web: gunicorn eventkita.wsgi --bind 0.0.0.0:$PORT
