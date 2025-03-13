@@ -1,6 +1,18 @@
 #!/bin/bash
+# Aktivasi Virtual Environment
+source venv/bin/activate
+
+# Install dependencies (pastikan tidak ada yang tertinggal)
 pip install -r requirements.txt
-python3 manage.py collectstatic --noinput
+
+# Migrate database
 python3 manage.py migrate
-source venv/Scripts/activate
-gunicorn myproject.wsgi --bind 0.0.0.0:$PORT
+
+# Collect static files
+python3 manage.py collectstatic --noinput
+
+# Jalankan Tailwind agar CSS bisa ter-generate
+python3 manage.py tailwind build
+
+# Jalankan Gunicorn
+gunicorn myproject.wsgi --bind 0.0.0.0:${PORT:-8000}
