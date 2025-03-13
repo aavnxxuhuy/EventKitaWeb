@@ -1,4 +1,5 @@
 #!/bin/bash
-echo "Starting Django Application..."
-source myenv/Scripts/activate
-gunicorn eventkita.wsgi --bind 0.0.0.0:$PORT
+pip install -r requirements.txt
+python3 manage.py collectstatic --noinput
+python3 manage.py migrate
+gunicorn myproject.wsgi --bind 0.0.0.0:$PORT
