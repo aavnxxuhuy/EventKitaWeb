@@ -7,14 +7,15 @@ WORKDIR /app
 # Copy semua file ke dalam container
 COPY . .
 
-# Buat virtual environment dan install dependencies
-RUN python -m venv venv && \
-    . venv/Scripts/activate && \
-    pip install --upgrade pip && \
-    pip install -r requirements.txt
+# Install virtual environment
+RUN python3 -m venv /app/venv
 
-# Expose port
+# Aktifkan virtual environment dan install dependencies
+RUN /app/venv/bin/python -m pip install --upgrade pip
+RUN /app/venv/bin/pip install -r requirements.txt
+
+# Expose port untuk Gunicorn
 EXPOSE 8000
 
-# Jalankan aplikasi
-CMD ["/bin/bash", "start.sh"]
+# Gunakan shell script sebagai entrypoint
+ENTRYPOINT ["/bin/bash", "/app/start.sh"]
