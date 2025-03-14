@@ -23,6 +23,15 @@ from .models import Event, SavedEvents
 
 from django.contrib.auth.decorators import login_required
 
+import locale
+
+import locale
+
+try:
+    locale.setlocale(locale.LC_ALL, 'id_ID.utf8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+
 User = get_user_model()
 searchStatus = 'not_empty'
 
