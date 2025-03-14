@@ -17,7 +17,6 @@ from .models import NewsletterSubscriber
 from datetime import datetime
 import locale
 from .models import Event
-import locale
 from django.shortcuts import get_object_or_404, render
 from .models import Event, SavedEvents
 
@@ -25,12 +24,7 @@ from django.contrib.auth.decorators import login_required
 
 import locale
 
-import locale
-
-try:
-    locale.setlocale(locale.LC_ALL, 'id_ID.utf8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
 User = get_user_model()
 searchStatus = 'not_empty'
@@ -178,7 +172,7 @@ def detail_page(request, event_id):
     tickets = event.tiket.all() 
 
     # Set locale for currency formatting
-    locale.setlocale(locale.LC_ALL, 'id_ID.UTF-8') 
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
 
     # Format prices for each ticket
     formatted_tickets = []
@@ -370,7 +364,7 @@ def payment_1(request, tiket_id):
     tiket = get_object_or_404(Tiket, id=tiket_id)
     event = tiket.event_terkait
 
-    locale.setlocale(locale.LC_ALL, 'id_ID.UTF-8') 
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
     formatted_price_per_pax = locale.currency(tiket.harga, grouping=True)
 
     context = {
@@ -402,7 +396,7 @@ def payment_2(request, purchase_id):
     event = tiket.event_terkait
 
     total_price = purchase.jumlah_tiket * tiket.harga if purchase.jumlah_tiket and tiket.harga else 0
-    locale.setlocale(locale.LC_ALL, 'id_ID.UTF-8') 
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
     formatted_total_price = locale.currency(total_price, grouping=True)
 
     context = {
@@ -462,7 +456,7 @@ def payment_3(request, purchase_id):
     event = tiket.event_terkait
 
     total_price = purchase.jumlah_tiket * tiket.harga if purchase.jumlah_tiket and tiket.harga else 0
-    locale.setlocale(locale.LC_ALL, 'id_ID.UTF-8') 
+    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
     formatted_total_price = locale.currency(total_price, grouping=True)
 
     context = {
