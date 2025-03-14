@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS= ["https://eventkitaweb-production.up.railway.app/"]
 SECRET_KEY = 'django-insecure-w@2zo)p*$8x#+yz_ab3i3_2mvf!62^!2h8y3%a*cb0i4mm!php'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
