@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py tailwind start & gunicorn eventkita.wsgi
+web: python manage.py migrate && python manage.py gunicorn eventkita.wsgi
