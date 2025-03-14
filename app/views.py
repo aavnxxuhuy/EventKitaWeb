@@ -422,7 +422,7 @@ def payment_2(request, purchase_id):
                 event=event,
                 purchase=purchase,
                 message=notification_message,
-                link=f"http://127.0.0.1:8000/detailpage/payment1/payment2/payment3/{purchase.id}"
+                link=f"https://eventkitaweb-production.up.railway.app/detailpage/payment1/payment2/payment3/{purchase.id}"
             )
 
             messages.success(request, 'Pembayaran Berhasil!')
@@ -674,6 +674,9 @@ def calendar_detail(request, date):
         aware_date = make_aware(naive_date)
         selected_date = localdate(aware_date)
 
+         # Format the date to "19 February 2025"
+        formatted_date = selected_date.strftime("%d %B %Y")
+
         # Ambil event hanya untuk tanggal yang dipilih
         events = Event.objects.filter(tanggal_kegiatan__date=selected_date)
 
@@ -685,7 +688,7 @@ def calendar_detail(request, date):
         })
 
         return render(request, 'calendar_detail.html', {
-            'date': date,
+            'date': formatted_date,
             'events': events,
             'events_json': events_json
         })
