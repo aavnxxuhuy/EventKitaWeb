@@ -15,16 +15,11 @@ from .models import AdminMessage
 from typing import cast
 from .models import NewsletterSubscriber
 from datetime import datetime
-import locale
 from .models import Event
 from django.shortcuts import get_object_or_404, render
 from .models import Event, SavedEvents
 
 from django.contrib.auth.decorators import login_required
-
-import locale
-
-locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
 User = get_user_model()
 searchStatus = 'not_empty'
@@ -159,6 +154,8 @@ def home(request):
     }
     return render(request, 'index.html', context)
 
+def format_harga(amount):
+    return f"Rp {amount:,.0f}".replace(",", ".")
 
 def detail_page(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -171,13 +168,10 @@ def detail_page(request, event_id):
 
     tickets = event.tiket.all() 
 
-    # Set locale for currency formatting
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
-
     # Format prices for each ticket
     formatted_tickets = []
     for ticket in tickets:
-        formatted_price = locale.currency(ticket.harga, grouping=True)
+        formatted_price = format_harga(ticket.harga)
         formatted_tickets.append({
             'ticket': ticket,
             'formatted_price': formatted_price
@@ -364,8 +358,7 @@ def payment_1(request, tiket_id):
     tiket = get_object_or_404(Tiket, id=tiket_id)
     event = tiket.event_terkait
 
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
-    formatted_price_per_pax = locale.currency(tiket.harga, grouping=True)
+    formatted_price_per_pax = format_harga(tiket.harga)
 
     context = {
         'tiket': tiket,
@@ -396,8 +389,7 @@ def payment_2(request, purchase_id):
     event = tiket.event_terkait
 
     total_price = purchase.jumlah_tiket * tiket.harga if purchase.jumlah_tiket and tiket.harga else 0
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
-    formatted_total_price = locale.currency(total_price, grouping=True)
+    formatted_total_price = format_harga(total_price)
 
     context = {
         'tiket': tiket,
@@ -456,8 +448,8 @@ def payment_3(request, purchase_id):
     event = tiket.event_terkait
 
     total_price = purchase.jumlah_tiket * tiket.harga if purchase.jumlah_tiket and tiket.harga else 0
-    locale.setlocale(locale.LC_ALL, 'C.UTF-8') 
-    formatted_total_price = locale.currency(total_price, grouping=True)
+    formatted_total_price = format_harga(total_price)
+
 
     context = {
         'tiket': tiket,
